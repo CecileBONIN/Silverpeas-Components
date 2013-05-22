@@ -312,18 +312,20 @@
           suspendMotiveWindow.close();
         suspendMotiveWindow = SP_openWindow(url, windowName, larg, haut, windowParams);
       }
+	  
+	  <% if (!"1".equals(alias)) { %>
+		  function pubDraftIn() {
+			location.href = "<%=routerUrl%>DraftIn?From=ViewPublication";
+		  }
 
-      function pubDraftIn() {
-        location.href = "<%=routerUrl%>DraftIn?From=ViewPublication";
-      }
-
-      function pubDraftOut() {
-        if (<%=kmeliaScc.isDraftOutAllowed()%>) {
-          location.href = "<%=routerUrl%>DraftOut?From=ViewPublication";
-        } else {
-          window.alert("<%=resources.getString("kmelia.PdcClassificationMandatory")%>");
-        }
-      }
+		  function pubDraftOut() {
+			if (<%=kmeliaScc.isDraftOutAllowed()%>) {
+			  location.href = "<%=routerUrl%>DraftOut?From=ViewPublication";
+			} else {
+			  window.alert("<%=resources.getString("kmelia.PdcClassificationMandatory")%>");
+			}
+		  }
+	  <% } %>
 
       function topicGoTo(id) {
         closeWindows();
