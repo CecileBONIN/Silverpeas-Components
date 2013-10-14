@@ -1,6 +1,6 @@
 <%--
 
-    Copyright (C) 2000 - 2012 Silverpeas
+    Copyright (C) 2000 - 2013 Silverpeas
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -442,6 +442,12 @@
         } else {
           browseBar.setComponentName(componentLabel, "Main");
         }
+        if (searchScope == SearchContext.LOCAL) { 
+          	if (StringUtil.isDefined(linkedPathString)) {
+          		linkedPathString += " > ";
+          	}
+          	linkedPathString += "<a href=\"GoBackToResults\">"+resources.getString("kmelia.publication.breadcrumb.results")+"</a>";
+        }
         browseBar.setPath(linkedPathString);
         browseBar.setExtraInformation(pubName);
         browseBar.setI18N(languages, contentLanguage);
@@ -705,7 +711,9 @@
                       		</ul>
                       	<% } %>
                       	<% if (isOwner && kmeliaScc.getInvisibleTabs().indexOf(KmeliaSessionController.TAB_READER_LIST) == -1) { %>
-                      	<a id="readingControlLink" href="ReadingControl">&gt;&gt; <%=resources.getString("PubGererControlesLecture") %></a>
+                      		<a id="readingControlLink" href="ReadingControl">&gt;&gt; <%=resources.getString("PubGererControlesLecture") %></a>
+                      	<% } else { %>
+                      		<br clear="all" />
                       	<% } %>
                     </div>
                     <!-- /consultation -->
