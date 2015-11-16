@@ -904,3 +904,9 @@ a.button.refuse span {
 	text-decoration:underline;
 	clear: both;
 }
+
+#illustration img {
+  width:310px;
+  margin-bottom:1em;
+  border-radius:12px;
+}

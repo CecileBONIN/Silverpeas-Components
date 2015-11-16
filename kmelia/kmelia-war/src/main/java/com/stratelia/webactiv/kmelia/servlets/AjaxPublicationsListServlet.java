@@ -25,11 +25,9 @@ import com.silverpeas.kmelia.KmeliaConstants;
 import com.silverpeas.kmelia.domain.TopicSearch;
 import com.silverpeas.kmelia.search.KmeliaSearchServiceFactory;
 import com.silverpeas.thumbnail.ThumbnailException;
-import com.silverpeas.thumbnail.ThumbnailSettings;
 import com.silverpeas.thumbnail.model.ThumbnailDetail;
 import com.silverpeas.util.EncodeHelper;
 import com.silverpeas.util.ForeignPK;
-import com.silverpeas.util.ImageUtil;
 import com.silverpeas.util.StringUtil;
 import com.silverpeas.util.template.SilverpeasTemplate;
 import com.silverpeas.util.template.SilverpeasTemplateFactory;
@@ -53,7 +51,6 @@ import com.stratelia.webactiv.util.node.model.NodePK;
 import com.stratelia.webactiv.util.publication.model.PublicationDetail;
 import com.stratelia.webactiv.util.publication.model.PublicationPK;
 import com.stratelia.webactiv.util.viewGenerator.html.GraphicElementFactory;
-import com.stratelia.webactiv.util.viewGenerator.html.ImageTag;
 import com.stratelia.webactiv.util.viewGenerator.html.UserNameGenerator;
 import com.stratelia.webactiv.util.viewGenerator.html.board.Board;
 import com.stratelia.webactiv.util.viewGenerator.html.pagination.Pagination;
@@ -429,12 +426,7 @@ public class AjaxPublicationsListServlet extends HttpServlet {
           ThumbnailDetail thumbnail = pub.getThumbnail();
           if (thumbnail != null && Boolean.valueOf(resources.getSetting("isVignetteVisible"))) {
             out.write("<span class=\"thumbnail\">");
-            try {
-              displayThumbnail(pub, kmeliaScc, publicationSettings, out);
-            } catch (ThumbnailException e) {
-              SilverTrace.info("kmelia", "AjaxPublicationsListServlet.displayPublications()",
-                  "root.MSG_GEN_ENTER_METHOD", "exception = " + e);
-            }
+            displayThumbnail(pub, kmeliaScc, out);
             out.write("</span>");
           } else {
             out.write("<span class=\"thumbnail\">");
@@ -777,40 +769,9 @@ public class AjaxPublicationsListServlet extends HttpServlet {
   }
 
   void displayThumbnail(PublicationDetail pub, KmeliaSessionController ksc,
-      ResourceLocator publicationSettings, Writer out) throws IOException, NumberFormatException,
-      ThumbnailException {
-    ThumbnailSettings thumbnailSettings = ksc.getThumbnailSettings();
-    String vignette_url;
-    String size = null;
-    if (pub.getImage().startsWith("/")) {
-      vignette_url = pub.getImage();
-      size = "133x100";
-    } else {
-      vignette_url = FileServerUtils.getUrl(pub.getPK().
-          getComponentName(),
-          "vignette", pub.getImage(), pub.getImageMimeType(),
-          publicationSettings.getString("imagesSubDirectory"));
-      if (!StringUtil.isDefined(pub.getThumbnail().getCropFileName())) {
-        // thumbnail is not cropped, process sizes
-        String[] computedSize = new String[2];
-        File image = getThumbnail(pub, publicationSettings);
-        if (thumbnailSettings.getWidth() != -1) {
-          computedSize = ImageUtil.getWidthAndHeightByWidth(image, thumbnailSettings.getWidth());
-        } else if (thumbnailSettings.getHeight() != -1) {
-          computedSize = ImageUtil.getWidthAndHeightByHeight(image, thumbnailSettings.getHeight());
-        }
-        if (StringUtil.isDefined(computedSize[0]) && StringUtil.isDefined(computedSize[1])) {
-          size = computedSize[0] + "x" + computedSize[1];
-        }
-      }
-    }
-    ImageTag imageTag = new ImageTag();
-    imageTag.setSrc(vignette_url);
-    imageTag.setType("vignette");
-    if (StringUtil.isDefined(size)) {
-      imageTag.setSize(size);
-    }
-    out.write(imageTag.toString());
+      Writer out) throws IOException {
+    String thumbnailImageSource = ksc.getThumbnailImageSource(pub);
+    out.write(thumbnailImageSource);
   }
 
   String displayPermalink(PublicationDetail pub, KmeliaSessionController kmeliaScc,
@@ -1253,14 +1214,5 @@ public class AjaxPublicationsListServlet extends HttpServlet {
       return "<div class=\"publiPath\">" + topicPathName + "</div>";
     }
     return "";
-  }
-
-  private File getThumbnail(PublicationDetail pubDetail, ResourceLocator publicationSettings) {
-    if (StringUtil.isDefined(pubDetail.getImage())) {
-      return new File(FileRepositoryManager.getAbsolutePath(pubDetail.getPK().getInstanceId())
-          + publicationSettings.getString("imagesSubDirectory") + File.separatorChar
-          + pubDetail.getImage());
-    }
-    return null;
   }
 }

@@ -132,6 +132,8 @@ response.setDateHeader ("Expires",-1); //prevents caching at the proxy server
 	String updaterId = pubDetail.getUpdaterId();
 %>
 
+<c:set var="publication" value="<%=pubDetail%>"/>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -280,6 +282,12 @@ $(function() {
         out.println(frame.printBefore());
 %>
 	<div class="rightContent">
+
+    <c:if test="${publication.thumbnail ne null and requestScope['ThumbnailVisible']}">
+      <div id="illustration">
+        <view:image src="${publication.thumbnail.URL}" alt="" size="350x"/>
+      </div>
+    </c:if>
 <%
 		/*********************************************************************************************************************/
 		/** Colonne de droite																							    **/

@@ -601,7 +601,14 @@
 	  	</div>
 
       <div class="rightContent">
-      	<div id="statPublication" class="bgDegradeGris">
+
+        <c:if test="${publication.thumbnail ne null and requestScope['ThumbnailVisible']}">
+          <div id="illustration">
+            <view:image src="${publication.thumbnail.URL}" alt="" size="350x"/>
+          </div>
+        </c:if>
+
+        <div id="statPublication" class="bgDegradeGris">
       		<p id="statInfo">
       			<b><%= kmeliaPublication.getNbAccess()%> <%=resources.getString("GML.stats.views") %></b>
       			<% if (ratingsAllowed) { %>

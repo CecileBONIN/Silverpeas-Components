@@ -568,6 +568,9 @@ public class KmeliaRequestRouter extends ComponentRequestRouter<KmeliaSessionCon
         putXMLDisplayerIntoRequest(kmeliaPublication.getDetail(), kmelia,
             request);
 
+        // Thumbnail must be displayed or not ?
+        request.setAttribute("ThumbnailVisible", kmelia.isThumbnailVisible());
+
         // Attachments area must be displayed or not ?
         request.setAttribute("AttachmentsEnabled", kmelia.isAttachmentsEnabled());
 
@@ -694,6 +697,9 @@ public class KmeliaRequestRouter extends ComponentRequestRouter<KmeliaSessionCon
           } else if (!alreadyOpened && documentId != null) {
             request.setAttribute("SingleAttachmentURL", kmelia.getAttachmentURL(documentId));
           }
+
+          // Thumbnail must be displayed or not ?
+          request.setAttribute("ThumbnailVisible", kmelia.isThumbnailVisible());
 
           // Attachments area must be displayed or not ?
           request.setAttribute("AttachmentsEnabled", kmelia.isAttachmentsEnabled());

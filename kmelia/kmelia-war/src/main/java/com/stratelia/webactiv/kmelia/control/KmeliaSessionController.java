@@ -57,8 +57,10 @@ import com.silverpeas.publicationTemplate.PublicationTemplateException;
 import com.silverpeas.publicationTemplate.PublicationTemplateManager;
 import com.silverpeas.subscribe.service.NodeSubscriptionResource;
 import com.silverpeas.thumbnail.ThumbnailSettings;
+import com.silverpeas.thumbnail.model.ThumbnailDetail;
 import com.silverpeas.util.FileUtil;
 import com.silverpeas.util.ForeignPK;
+import com.silverpeas.util.ImageUtil;
 import com.silverpeas.util.StringUtil;
 import com.silverpeas.util.ZipManager;
 import com.silverpeas.util.clipboard.ClipboardException;
@@ -111,6 +113,7 @@ import com.stratelia.webactiv.kmelia.model.updatechain.UpdateChainDescriptor;
 import com.stratelia.webactiv.util.DateUtil;
 import com.stratelia.webactiv.util.EJBUtilitaire;
 import com.stratelia.webactiv.util.FileRepositoryManager;
+import com.stratelia.webactiv.util.FileServerUtils;
 import com.stratelia.webactiv.util.GeneralPropertiesManager;
 import com.stratelia.webactiv.util.JNDINames;
 import com.stratelia.webactiv.util.ResourceLocator;
@@ -133,6 +136,7 @@ import com.stratelia.webactiv.util.publication.model.ValidationStep;
 import com.stratelia.webactiv.util.statistic.control.StatisticBm;
 import com.stratelia.webactiv.util.statistic.model.HistoryObjectDetail;
 import com.stratelia.webactiv.util.statistic.model.StatisticRuntimeException;
+import com.stratelia.webactiv.util.viewGenerator.html.ImageTag;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.apache.commons.fileupload.FileItem;
@@ -3949,5 +3953,73 @@ public class KmeliaSessionController extends AbstractComponentSessionController 
   public boolean isTopicAdmin(final String nodeId) {
     return SilverpeasRole.getGreatestFrom(SilverpeasRole.from(getUserTopicProfile(nodeId)))
         .isGreaterThanOrEquals(SilverpeasRole.admin);
+  }
+
+  /**
+   * Is the thumbnail is displayed for a publication
+   *
+   * @return true if the thumbnail is used for a publication, false otherwise.
+   */
+  public boolean isThumbnailVisible() {
+    return getSettings().getBoolean("isVignetteVisible", true);
+  }
+
+  /**
+   * Get the file of the thumbnail of a publication
+   *
+   * @param pubDetail
+   * @return the file.
+   */
+  private File getThumbnailFile(PublicationDetail pubDetail) {
+    if (StringUtil.isDefined(pubDetail.getImage())) {
+      return new File(FileRepositoryManager.getAbsolutePath(pubDetail.getPK().getInstanceId())
+          + getPublicationSettings().getString("imagesSubDirectory") + File.separatorChar
+          + pubDetail.getImage());
+    }
+    return null;
+  }
+
+  /**
+   * Get the source of the tumbnail image of a publication
+   *
+   * @param pubDetail
+   * @return the source of the thumbnail image
+   */
+  public String getThumbnailImageSource(PublicationDetail pubDetail) {
+    ThumbnailDetail thumbnail = pubDetail.getThumbnail();
+    if(thumbnail != null) {
+      ThumbnailSettings thumbnailSettings = getThumbnailSettings();
+      String vignette_url;
+      String size = null;
+      if (pubDetail.getImage().startsWith("/")) {
+        vignette_url = pubDetail.getImage();
+        size = "133x100";
+      } else {
+        vignette_url = FileServerUtils.getUrl(pubDetail.getPK().
+                getComponentName(), "vignette", pubDetail.getImage(), pubDetail.getImageMimeType(),
+            getPublicationSettings().getString("imagesSubDirectory"));
+        if (!StringUtil.isDefined(thumbnail.getCropFileName())) {
+          // thumbnail is not cropped, process sizes
+          String[] computedSize = new String[2];
+          File image = getThumbnailFile(pubDetail);
+          if (thumbnailSettings.getWidth() != -1) {
+            computedSize = ImageUtil.getWidthAndHeightByWidth(image, thumbnailSettings.getWidth());
+          } else if (thumbnailSettings.getHeight() != -1) {
+            computedSize = ImageUtil.getWidthAndHeightByHeight(image, thumbnailSettings.getHeight());
+          }
+          if (StringUtil.isDefined(computedSize[0]) && StringUtil.isDefined(computedSize[1])) {
+            size = computedSize[0] + "x" + computedSize[1];
+          }
+        }
+      }
+      ImageTag imageTag = new ImageTag();
+      imageTag.setSrc(vignette_url);
+      imageTag.setType("vignette");
+      if (StringUtil.isDefined(size)) {
+        imageTag.setSize(size);
+      }
+      return imageTag.toString();
+    }
+    return "";
   }
 }
